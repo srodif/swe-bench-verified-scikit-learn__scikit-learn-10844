@@ -59,7 +59,7 @@ def test_perfect_matches():
 
 
 def test_homogeneous_but_not_complete_labeling():
-    # homogeneous but not complete clustering
+    # homogeneous but not complete clustering.
     h, c, v = homogeneity_completeness_v_measure(
         [0, 0, 0, 1, 1, 1],
         [0, 0, 0, 1, 2, 2])
