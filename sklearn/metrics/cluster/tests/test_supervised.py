@@ -1,4 +1,5 @@
 import numpy as np
+import warnings
 
 from sklearn.metrics.cluster import adjusted_mutual_info_score
 from sklearn.metrics.cluster import adjusted_rand_score
@@ -274,3 +275,25 @@ def test_fowlkes_mallows_score_properties():
     # symmetric and permutation(both together)
     score_both = fowlkes_mallows_score(labels_b, (labels_a + 2) % 3)
     assert_almost_equal(score_both, expected)
+
+
+def test_fowlkes_mallows_score_overflow():
+    # Test for regression where pk * qk can overflow leading to RuntimeWarning
+    # and incorrect results. Use large but reasonable cluster sizes.
+    n_samples = 70000
+    labels_true = [0] * n_samples + [1] * n_samples
+    labels_pred = [0] * n_samples + [1] * n_samples
+    
+    # This should not produce any warnings and should return 1.0 (perfect match)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        score = fowlkes_mallows_score(labels_true, labels_pred)
+        
+        # Should be 1.0 for perfect clustering
+        assert_almost_equal(score, 1.0)
+        
+        # Should not have any overflow warnings
+        overflow_warnings = [warning for warning in w 
+                           if issubclass(warning.category, RuntimeWarning)
+                           and 'overflow' in str(warning.message)]
+        assert len(overflow_warnings) == 0, f"Unexpected overflow warnings: {overflow_warnings}"
